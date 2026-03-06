@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WiFi Broadcast Host</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 2rem auto; padding: 1rem; }
+    textarea { width: 100%; min-height: 120px; margin-bottom: 1rem; }
+    button { padding: 0.7rem 1.1rem; font-size: 1rem; }
+    .status { margin-top: 1rem; color: #0b6; }
+    .help { background: #f6f7f9; border: 1px solid #e2e5ea; border-radius: 8px; padding: 1rem; margin-top: 1.5rem; }
+    code { background: #eee; padding: 0.1rem 0.3rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Host Broadcast Console</h1>
+  <p>Type any message and broadcast it to all devices connected to the same WiFi that opened the receiver page.</p>
+
+  <textarea id="message" placeholder="Enter message to broadcast..."></textarea>
+  <br />
+  <button id="sendBtn">Send to all devices</button>
+  <div class="status" id="status"></div>
+
+  <div class="help">
+    <h3>How receivers join</h3>
+    <ol>
+      <li>Run this server on host laptop/phone hotspot.</li>
+      <li>Find your local IP (example: <code>192.168.1.9</code>).</li>
+      <li>On connected devices open: <code>http://HOST_IP:5000/receiver</code>.</li>
+    </ol>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+      const text = document.getElementById('message').value.trim();
+      if (!text) {
+        statusEl.textContent = 'Please enter a message first.';
+        statusEl.style.color = '#c00';
+        return;
+      }
+
+      const response = await fetch('/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        statusEl.textContent = data.error || 'Failed to send message';
+        statusEl.style.color = '#c00';
+        return;
+      }
+
+      statusEl.textContent = `Message sent. Active connected receivers: ${data.subscribers}`;
+      statusEl.style.color = '#0b6';
+      document.getElementById('message').value = '';
+    });
+  </script>
+</body>
+</html>

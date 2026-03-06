@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WiFi Broadcast Receiver</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 2rem auto; padding: 1rem; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; background: #fafafa; }
+    .meta { color: #777; font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .status { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Receiver Screen</h1>
+  <p>This page auto-updates whenever host sends a new message.</p>
+  <div class="status" id="status">Connecting...</div>
+  <div id="messages"></div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const listEl = document.getElementById('messages');
+
+    const source = new EventSource('/stream');
+
+    source.onopen = () => {
+      statusEl.textContent = 'Connected. Waiting for messages...';
+      statusEl.style.color = '#0b6';
+    };
+
+    source.onerror = () => {
+      statusEl.textContent = 'Connection lost. Retrying automatically...';
+      statusEl.style.color = '#c00';
+    };
+
+    source.onmessage = (event) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = 'Broadcast message';
+
+      const body = document.createElement('div');
+      body.textContent = event.data;
+
+      card.appendChild(meta);
+      card.appendChild(body);
+      listEl.prepend(card);
+    };
+  </script>
+</body>
+</html>
